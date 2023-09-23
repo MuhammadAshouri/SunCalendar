@@ -2,47 +2,51 @@
 using System.Globalization;
 using System.Windows;
 
-namespace SunCalendar
+namespace SunCalendar;
+
+public partial class MainWindow
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private DateTime LastTime;
+    public MainWindow() => InitializeComponent();
+
+    private void WindowLoaded(object sender, RoutedEventArgs e)
     {
-        DateTime LastTime;
+        Hide();
+        FillFields(DateTime.Now);
+    }
 
-        public MainWindow() => InitializeComponent();
+    private void CloseClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => Hide();
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            Hide();
-            FillFields(DateTime.Now);
-        }
+    private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        var now = DateTime.Now;
+        if (LastTime.DayOfYear == now.DayOfYear) return;
+        LastTime = now;
+        FillFields(now);
+    }
 
-        private void CloseClick(object sender, System.Windows.Input.MouseButtonEventArgs e) => Hide();
-
-        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var now = DateTime.Now;
-            if (LastTime.DayOfYear != now.DayOfYear)
-            {
-                LastTime = now;
-                FillFields(now);
-            }
-        }
-
-        void FillFields(DateTime now)
-        {
-            var cal = new PersianCalendar();
-            TodayShamsiDay.Text = cal.GetDayOfMonth(now).ToString();
-            TodayShamsiMonth.Text = cal.GetMonth(now).ToString();
-            TodayShamsiYear.Text = cal.GetYear(now).ToString();
-
-            TodayMiladi.Text = $"{now.Year}/{now.Month}/{now.Day}";
-            var hijri = new HijriCalendar();
-            TodayHijri.Text = $"{hijri.GetYear(now)}/{hijri.GetMonth(now)}/{hijri.GetDayOfMonth(now)}";
-
-            TodayName.Text = now.DayOfWeek.ToString();
-        }
+    private void FillFields(DateTime now)
+    {
+        var cal = new PersianCalendar();
+        var dayShamsi = cal.GetDayOfMonth(now);
+        var monthShamsi = cal.GetMonth(now);
+        var dayShamsiStr = dayShamsi.CompareTo(10) >= 0 ? dayShamsi.ToString() : "0" + dayShamsi;
+        var monthShamsiStr = monthShamsi.CompareTo(10) >= 0 ? monthShamsi.ToString() : "0" + monthShamsi;
+        TodayShamsiDay.Text = dayShamsiStr;
+        TodayShamsiMonth.Text = monthShamsiStr;
+        TodayShamsiYear.Text = cal.GetYear(now).ToString();
+        
+        var day = now.Day.CompareTo(10) >= 0 ? now.Day.ToString() : "0" + now.Day;
+        var month = now.Month.CompareTo(10) >= 0 ? now.Month.ToString() : "0" + now.Month;
+        TodayMiladi.Text = $"{now.Year}/{month}/{day}";
+        
+        var hijri = new HijriCalendar();
+        var dayHijri = hijri.GetDayOfMonth(now);
+        var monthHijri = hijri.GetMonth(now);
+        var dayHijriStr = dayHijri.CompareTo(10) >= 0 ? dayHijri.ToString() : "0" + dayHijri;
+        var monthHijriStr = monthHijri.CompareTo(10) >= 0 ? monthHijri.ToString() : "0" + monthHijri;
+        TodayHijri.Text = $"{hijri.GetYear(now)}/{monthHijriStr}/{dayHijriStr}";
+        
+        TodayName.Text = now.DayOfWeek.ToString();
     }
 }
